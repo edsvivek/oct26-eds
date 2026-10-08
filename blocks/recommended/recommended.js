@@ -2,18 +2,15 @@ export default function decorate(block) {
   const rows = [...block.children];
   if (!rows.length) return;
 
-  const firstRow = rows[0];
-  const firstCells = [...firstRow.children];
-  const titleText = firstCells.length === 1 ? firstCells[0].textContent.trim() : 'Recommended';
-
-  const header = document.createElement('div');
-  header.className = 'recommended-header';
-  header.textContent = titleText || 'Recommended';
+  const firstCells = [...rows[0].children];
+  const hasHeader = firstCells.length === 1
+    && !firstCells[0].querySelector('picture, img, a');
+  const offerRows = hasHeader ? rows.slice(1) : rows;
 
   const grid = document.createElement('div');
   grid.className = 'recommended-grid';
 
-  rows.slice(1).forEach((row) => {
+  offerRows.forEach((row, index) => {
     const cells = [...row.children];
     if (!cells.length) return;
 
@@ -26,44 +23,83 @@ export default function decorate(block) {
 
     const media = document.createElement('div');
     media.className = 'recommended-media';
+    const placeholder = document.createElement('span');
+    placeholder.className = 'recommended-media-placeholder';
+    placeholder.textContent = String(index + 1).padStart(2, '0');
+    placeholder.setAttribute('aria-hidden', 'true');
+
     if (picture) {
-      media.append(picture.cloneNode(true));
+      const pictureClone = picture.cloneNode(true);
+      const pictureImage = pictureClone.querySelector('img');
+      if (pictureImage) {
+        pictureImage.addEventListener('error', () => {
+          media.replaceChildren(placeholder);
+        }, { once: true });
+      }
+      media.append(pictureClone);
     } else if (img) {
-      media.append(img.cloneNode(true));
+      const imageClone = img.cloneNode(true);
+      imageClone.addEventListener('error', () => {
+        media.replaceChildren(placeholder);
+      }, { once: true });
+      media.append(imageClone);
     } else {
-      const placeholder = document.createElement('span');
-      placeholder.className = 'recommended-media-placeholder';
-      placeholder.textContent = 'Offer';
       media.append(placeholder);
     }
 
     const body = document.createElement('div');
     body.className = 'recommended-body';
 
-    const title = document.createElement('div');
-    title.className = 'recommended-card-title';
-    title.textContent = cells[1] ? cells[1].textContent.trim() : '';
+    const textCell = cells[1];
+    if (cells.length >= 5) {
+      [
+        ['recommended-card-title', cells[1]],
+        ['recommended-card-description', cells[2]],
+        ['recommended-card-value', cells[3]],
+      ].forEach(([className, source]) => {
+        if (!source) return;
+        const item = document.createElement('div');
+        item.className = className;
+        item.textContent = source.textContent.trim();
+        body.append(item);
+      });
+    } else if (textCell) {
+      const paragraphs = [...textCell.querySelectorAll('p')]
+        .filter((paragraph) => paragraph.textContent.trim());
+      const classes = [
+        'recommended-card-title',
+        'recommended-card-description',
+        'recommended-card-value',
+      ];
 
-    const description = document.createElement('div');
-    description.className = 'recommended-card-description';
-    description.textContent = cells[2] ? cells[2].textContent.trim() : '';
+      if (paragraphs.length) {
+        paragraphs.forEach((paragraph, paragraphIndex) => {
+          const item = paragraph.cloneNode(true);
+          item.classList.add(classes[Math.min(paragraphIndex, classes.length - 1)]);
+          body.append(item);
+        });
+      } else if (textCell.textContent.trim()) {
+        const title = document.createElement('div');
+        title.className = 'recommended-card-title';
+        title.textContent = textCell.textContent.trim();
+        body.append(title);
+      }
+    }
 
-    const value = document.createElement('div');
-    value.className = 'recommended-card-value';
-    value.textContent = cells[3] ? cells[3].textContent.trim() : '';
-
-    const ctaCell = cells[4] || cells[3];
+    const ctaCell = cells.length >= 5 ? cells[4] : cells[2] || cells[4] || cells[3];
     const ctaLink = ctaCell?.querySelector('a');
     const button = document.createElement('a');
     button.className = 'recommended-card-button';
     button.href = ctaLink ? ctaLink.href : '#';
-    button.textContent = ctaCell ? ctaCell.textContent.trim() || 'View Details' : 'View Details';
+    button.textContent = ctaLink?.textContent.trim()
+      || ctaCell?.textContent.trim()
+      || 'View Details';
 
-    body.append(title, description, value, button);
+    body.append(button);
     card.append(media, body);
     grid.append(card);
   });
 
   block.textContent = '';
-  block.append(header, grid);
+  block.append(grid);
 }
