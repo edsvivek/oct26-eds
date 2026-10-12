@@ -37,7 +37,7 @@ function createCard(product) {
 
 export default async function decorate(block) {
   const authoredLink = block.querySelector('a');
-  const source = authoredLink?.getAttribute('href') || '/products.json';
+  const source = authoredLink?.getAttribute('href') || '/products/spreadsheet-demo.json';
 
   block.textContent = '';
 
