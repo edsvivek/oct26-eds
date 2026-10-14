@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="#075bd8" role="img" aria-labelledby="title">
+  <title id="title">Awards winning</title>
+  <path d="M16 5h32v8c0 13-7 22-16 22S16 26 16 13V5Z"/>
+  <path d="M16 9H7v6c0 9 5 15 14 16l2-6c-5-1-8-4-8-10V9Zm32 0h9v6c0 9-5 15-14 16l-2-6c5-1 8-4 8-10V9Z"/>
+  <path d="M29 35h6v12h9v7H20v-7h9V35Z"/>
+  <path d="M17 54h30v7H17z"/>
+</svg>
