@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="#075bd8" role="img" aria-labelledby="title">
+  <title id="title">Info Technology</title>
+  <circle cx="18" cy="15" r="10"/>
+  <path d="M6 54V37c0-8 5-13 12-13 5 0 9 3 11 8l5 9 8-2 2 5-13 4-8-10v16H6Z"/>
+  <path d="M37 18 58 13v33H36v-5h17V19l-12 3v15l-5-2V18Z"/>
+  <path d="m45 24 2 2 3-1-1 3 2 2-3 1-1 3-2-2-3 1 1-3-2-2 3-1 1-3Z" fill="#fff"/>
+  <path d="M28 49h29v5H28z"/>
+</svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="#075bd8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-labelledby="title">
+  <title id="title">High Performance</title>
+  <path d="M10 8v48h48" stroke-width="4"/>
+  <path d="M20 48V37h8v11m4 0V29h8v19m4 0V22h8v26" fill="#075bd8" stroke-width="2"/>
+  <path d="m21 31 12-11 10 4 13-13m-9 1 9-1-1 9" stroke-width="4"/>
+</svg>
