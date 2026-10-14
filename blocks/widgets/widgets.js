@@ -14,6 +14,75 @@ function getCellParagraphs(cell) {
   return cell.textContent.split('\n').map((text) => text.trim()).filter(Boolean);
 }
 
+function parseNumber(text) {
+  const match = text.match(/^([+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)(.*)$/);
+  if (!match) return null;
+
+  return {
+    target: Number(match[1].replaceAll(',', '')),
+    suffix: match[2],
+    decimals: (match[1].split('.')[1] || '').length,
+    grouped: match[1].includes(','),
+    original: text,
+  };
+}
+
+function formatNumber(value, numberData) {
+  const options = {
+    minimumFractionDigits: numberData.decimals,
+    maximumFractionDigits: numberData.decimals,
+    useGrouping: numberData.grouped,
+  };
+  return `${value.toLocaleString('en-US', options)}${numberData.suffix}`;
+}
+
+function countUpNumbers(block) {
+  const counters = [...block.querySelectorAll('.widgets-stat-number')]
+    .map((element) => ({ element, numberData: parseNumber(element.textContent.trim()) }))
+    .filter(({ numberData }) => numberData && Number.isFinite(numberData.target));
+
+  if (!counters.length) return;
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reducedMotion) return;
+
+  counters.forEach(({ element, numberData }) => {
+    element.setAttribute('aria-label', numberData.original);
+    element.textContent = formatNumber(0, numberData);
+  });
+
+  const animate = () => {
+    const duration = 1600;
+    const startTime = performance.now();
+    const tick = (now) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - ((1 - progress) ** 3);
+      counters.forEach(({ element, numberData }) => {
+        const value = Math.round(numberData.target * eased * (10 ** numberData.decimals))
+          / (10 ** numberData.decimals);
+        element.textContent = progress === 1
+          ? numberData.original
+          : formatNumber(value, numberData);
+      });
+      if (progress < 1) window.requestAnimationFrame(tick);
+    };
+    window.requestAnimationFrame(tick);
+  };
+
+  if (!('IntersectionObserver' in window)) {
+    animate();
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    if (entries.some((entry) => entry.isIntersecting)) {
+      observer.disconnect();
+      animate();
+    }
+  }, { threshold: 0.15 });
+  observer.observe(block);
+}
+
 function createIcon(cell, index) {
   const image = cell.querySelector('img');
   const picture = image?.closest('picture');
@@ -88,4 +157,5 @@ export default function decorate(block) {
   });
 
   block.replaceChildren(grid);
+  countUpNumbers(block);
 }
