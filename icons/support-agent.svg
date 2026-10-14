@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="#075bd8" role="img" aria-labelledby="title">
+  <title id="title">24/7 Support</title>
+  <path d="M8 31a24 24 0 0 1 48 0h-6a18 18 0 0 0-36 0H8Z"/>
+  <path d="M7 28h8v18H7a4 4 0 0 1-4-4V32a4 4 0 0 1 4-4Zm50 0h-8v18h8a4 4 0 0 0 4-4V32a4 4 0 0 0-4-4Z"/>
+  <path d="M22 56c1-6 4-9 10-11l5-2 5 4 5-4 5 2c5 2 8 5 9 11H22Z"/>
+  <path d="m32 43 6 6 6-6-3-4h-6l-3 4Zm8 7-2 6-2-6h4Z" fill="#fff"/>
+  <path d="M48 19c-2-5-7-8-13-8-8 0-14 6-14 14v5h4v-5c0-6 4-10 10-10 4 0 8 2 10 6l3-2Z"/>
+</svg>

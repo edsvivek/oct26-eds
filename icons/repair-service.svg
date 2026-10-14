@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="#075bd8" role="img" aria-labelledby="title">
+  <title id="title">Repair Service</title>
+  <path d="M38 7a17 17 0 0 0 2 21L21 47l-5-5 19-19A17 17 0 0 0 56 5l-9 9-7-2-2-7 9-9A17 17 0 0 0 38 7Z" transform="translate(0 8)"/>
+  <path d="m13 5 11 11-7 7L6 12a10 10 0 0 1 7-7Zm4 22 7 7-12 12a5 5 0 0 1-7-7l12-12Zm25 4 6-6 11 11a5 5 0 0 1-7 7L42 31Zm5-7 7-7 5 5-7 7-5-5Z"/>
+</svg>

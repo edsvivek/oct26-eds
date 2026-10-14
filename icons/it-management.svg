@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="#075bd8" role="img" aria-labelledby="title">
+  <title id="title">IT Management</title>
+  <path d="M32 3c-9 8-13 19-13 31 0 6 1 10 3 14h20c2-4 3-8 3-14C45 22 41 11 32 3Z"/>
+  <circle cx="32" cy="25" r="6" fill="#fff"/>
+  <path d="m19 34-9 7-2 13 14-7-3-13Zm26 0 9 7 2 13-14-7 3-13ZM26 50l-5 10h22l-5-10H26Z"/>
+</svg>
