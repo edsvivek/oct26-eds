@@ -1,0 +1,11 @@
+/* widgets.css
+   Styles for widgets block
+*/
+
+.widget {
+  display: block;
+  padding: 1rem;
+  border: 1px solid #e1e1e1;
+  border-radius: 6px;
+  background: #fff;
+}
