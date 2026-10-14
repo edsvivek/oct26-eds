@@ -1,17 +1,17 @@
 const slideImages = [
-  'https://demo.themexbd.com/wpx/technowp/wp-content/uploads/2025/04/technowp-slider.jpg',
-  'https://demo.themexbd.com/wpx/technowp/wp-content/uploads/2025/04/technowp-slider2.jpg',
+  'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1600&q=80',
 ];
 
-const defaultTitle = 'Super IT Service For Digital Business';
+const defaultTitle = 'Super IT Service For<br>Digital Business';
 const defaultDescription = 'Rorem ipsum dolor sit amet, consectetur adipisicing elit, eiusmod to incididunt ut labore et dolore magna aliqua. designing in a way of just not only professions';
 
 function createSocialLinks() {
   const socials = [
     { name: 'Facebook', label: 'f', href: 'https://www.facebook.com/' },
-    { name: 'X', label: 'X', href: 'https://x.com/' },
+    { name: 'X', label: 'x', href: 'https://x.com/' },
     { name: 'Instagram', label: '◎', href: 'https://www.instagram.com/' },
-    { name: 'Dribbble', label: '◉', href: 'https://dribbble.com/' },
+    { name: 'Dribbble', label: '◌', href: 'https://dribbble.com/' },
   ];
   const list = document.createElement('nav');
   list.className = 'custom-carousel-socials';
@@ -34,7 +34,7 @@ function createDefaultContent() {
   content.className = 'custom-carousel-content';
 
   const title = document.createElement('h1');
-  title.textContent = defaultTitle;
+  title.innerHTML = defaultTitle;
   const description = document.createElement('p');
   description.textContent = defaultDescription;
 
@@ -191,3 +191,4 @@ export default function decorate(block) {
 
   block.append(progress, track, controls, indicators);
 }
+
