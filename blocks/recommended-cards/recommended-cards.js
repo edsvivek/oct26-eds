@@ -4,6 +4,15 @@ const getText = (cell) => cell?.textContent.trim() || '';
 
 const getString = (value) => (typeof value === 'string' ? value.trim() : '');
 
+const isAllowedProtocol = (href) => {
+  try {
+    const { protocol } = new URL(href, document.baseURI);
+    return ['http:', 'https:', 'mailto:', 'tel:'].includes(protocol);
+  } catch {
+    return false;
+  }
+};
+
 const getJsonSource = (block) => {
   const cells = [...block.children].flatMap((row) => (
     [...row.children].map((cell) => ({ cell, row }))
@@ -32,9 +41,10 @@ const getJsonSource = (block) => {
 };
 
 const resolveImagePath = (imagePath, source) => {
-  if (!getString(imagePath)) return '';
+  const path = getString(imagePath);
+  if (!path) return '';
   try {
-    return new URL(imagePath.trim(), source).href;
+    return new URL(path, source).href;
   } catch {
     return '';
   }
@@ -46,12 +56,7 @@ const getAuthoredLink = (cell) => {
   const label = authoredLink?.textContent.trim();
   if (!href || href === '#' || !label) return null;
 
-  try {
-    const { protocol } = new URL(href, document.baseURI);
-    if (!['http:', 'https:', 'mailto:', 'tel:'].includes(protocol)) return null;
-  } catch {
-    return null;
-  }
+  if (!isAllowedProtocol(href)) return null;
 
   return { href, label };
 };
@@ -121,7 +126,7 @@ const createMedia = (cardData, source) => {
   if (imagePath) {
     const image = document.createElement('img');
     image.src = imagePath;
-    image.alt = cardData.discounttext || cardData.category || '';
+    image.alt = getString(cardData.discounttext || cardData.category);
     image.loading = 'lazy';
     media.append(image);
   } else {
@@ -160,20 +165,15 @@ const createCard = (cardData, source) => {
   const titleText = getString(cardData.discounttext);
   const descriptionText = getString(cardData.description);
   const buttonText = getString(cardData.buttontext);
+  const buttonHref = getString(cardData.buttonlink);
   let button = null;
-  if (buttonText && getString(cardData.buttonlink)) {
-    try {
-      const href = getString(cardData.buttonlink);
-      const { protocol } = new URL(href, document.baseURI);
-      if (['http:', 'https:', 'mailto:', 'tel:'].includes(protocol)) {
-        const link = document.createElement('a');
-        link.className = 'recommended-cards-cta';
-        link.href = href;
-        link.textContent = buttonText;
-        button = link;
-      }
-    } catch {
-      button = null;
+  if (buttonText && buttonHref) {
+    if (isAllowedProtocol(buttonHref)) {
+      const link = document.createElement('a');
+      link.className = 'recommended-cards-cta';
+      link.href = buttonHref;
+      link.textContent = buttonText;
+      button = link;
     }
   }
 
@@ -226,7 +226,9 @@ const getPageStarts = (track, cards) => {
   const firstCard = cards[0];
   const styles = window.getComputedStyle(track);
   const gap = Number.parseFloat(styles.columnGap) || 0;
-  const cardWidth = firstCard.getBoundingClientRect().width;
+  const cardWidth = firstCard.getBoundingClientRect().width || firstCard.offsetWidth || 0;
+  if (!Number.isFinite(cardWidth) || cardWidth <= 0) return [0];
+
   const cardsPerPage = Math.max(1, Math.floor((track.clientWidth + gap) / (cardWidth + gap)));
   const lastStart = Math.max(0, cards.length - cardsPerPage);
   const starts = [];
@@ -250,8 +252,10 @@ const updatePagination = (track, cards, pagination) => {
     dot.className = 'recommended-cards-dot';
     dot.setAttribute('aria-label', `Show cards starting at ${start + 1}`);
     dot.addEventListener('click', () => {
+      const targetCard = cards[Math.min(start, cards.length - 1)] || cards[0];
+      if (!targetCard) return;
       const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-      track.scrollTo({ left: getCardOffset(track, cards[start]), behavior });
+      track.scrollTo({ left: getCardOffset(track, targetCard), behavior });
     });
     pagination.append(dot);
     if (pageIndex === 0) dot.setAttribute('aria-current', 'page');
@@ -261,17 +265,20 @@ const updatePagination = (track, cards, pagination) => {
 };
 
 const decorateCarousel = (track, cards, pagination) => {
+  if (!cards.length) return;
+
   let starts = updatePagination(track, cards, pagination);
   let scrollFrame = 0;
 
   const syncActiveDot = () => {
     scrollFrame = 0;
-    if (pagination.children.length <= 1) return;
+    if (pagination.children.length <= 1 || !starts.length) return;
 
     const currentOffset = track.scrollLeft;
     let activeIndex = 0;
     starts.forEach((start, index) => {
-      if (getCardOffset(track, cards[start]) <= currentOffset + 2) activeIndex = index;
+      const card = cards[start];
+      if (card && getCardOffset(track, card) <= currentOffset + 2) activeIndex = index;
     });
 
     [...pagination.children].forEach((dot, index) => {
