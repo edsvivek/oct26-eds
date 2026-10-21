@@ -4,15 +4,6 @@ const getText = (cell) => cell?.textContent.trim() || '';
 
 const getString = (value) => (typeof value === 'string' ? value.trim() : '');
 
-const isAllowedProtocol = (href) => {
-  try {
-    const { protocol } = new URL(href, document.baseURI);
-    return ['http:', 'https:', 'mailto:', 'tel:'].includes(protocol);
-  } catch {
-    return false;
-  }
-};
-
 const getJsonSource = (block) => {
   const cells = [...block.children].flatMap((row) => (
     [...row.children].map((cell) => ({ cell, row }))
@@ -41,10 +32,9 @@ const getJsonSource = (block) => {
 };
 
 const resolveImagePath = (imagePath, source) => {
-  const path = getString(imagePath);
-  if (!path) return '';
+  if (!getString(imagePath)) return '';
   try {
-    return new URL(path, source).href;
+    return new URL(imagePath.trim(), source).href;
   } catch {
     return '';
   }
@@ -56,7 +46,12 @@ const getAuthoredLink = (cell) => {
   const label = authoredLink?.textContent.trim();
   if (!href || href === '#' || !label) return null;
 
-  if (!isAllowedProtocol(href)) return null;
+  try {
+    const { protocol } = new URL(href, document.baseURI);
+    if (!['http:', 'https:', 'mailto:', 'tel:'].includes(protocol)) return null;
+  } catch {
+    return null;
+  }
 
   return { href, label };
 };
@@ -126,7 +121,7 @@ const createMedia = (cardData, source) => {
   if (imagePath) {
     const image = document.createElement('img');
     image.src = imagePath;
-    image.alt = getString(cardData.discounttext || cardData.category);
+    image.alt = cardData.discounttext || cardData.category || '';
     image.loading = 'lazy';
     media.append(image);
   } else {
@@ -147,8 +142,9 @@ const createMedia = (cardData, source) => {
   const favorite = document.createElement('button');
   favorite.type = 'button';
   favorite.className = 'recommended-cards-favorite';
-  favorite.setAttribute('aria-label', 'Add to favorites');
-  favorite.setAttribute('aria-pressed', 'false');
+  const startsFavorite = cardData.favorite === true || cardData.isFavorite === true;
+  favorite.setAttribute('aria-label', startsFavorite ? 'Remove from favorites' : 'Add to favorites');
+  favorite.setAttribute('aria-pressed', String(startsFavorite));
   favorite.innerHTML = '<svg viewBox="0 0 24 24" focusable="false"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" /></svg>';
   favorite.addEventListener('click', () => {
     const isFavorite = favorite.getAttribute('aria-pressed') === 'true';
@@ -165,15 +161,20 @@ const createCard = (cardData, source) => {
   const titleText = getString(cardData.discounttext);
   const descriptionText = getString(cardData.description);
   const buttonText = getString(cardData.buttontext);
-  const buttonHref = getString(cardData.buttonlink);
   let button = null;
-  if (buttonText && buttonHref) {
-    if (isAllowedProtocol(buttonHref)) {
-      const link = document.createElement('a');
-      link.className = 'recommended-cards-cta';
-      link.href = buttonHref;
-      link.textContent = buttonText;
-      button = link;
+  if (buttonText && getString(cardData.buttonlink)) {
+    try {
+      const href = getString(cardData.buttonlink);
+      const { protocol } = new URL(href, document.baseURI);
+      if (['http:', 'https:', 'mailto:', 'tel:'].includes(protocol)) {
+        const link = document.createElement('a');
+        link.className = 'recommended-cards-cta';
+        link.href = href;
+        link.textContent = buttonText;
+        button = link;
+      }
+    } catch {
+      button = null;
     }
   }
 
@@ -226,9 +227,7 @@ const getPageStarts = (track, cards) => {
   const firstCard = cards[0];
   const styles = window.getComputedStyle(track);
   const gap = Number.parseFloat(styles.columnGap) || 0;
-  const cardWidth = firstCard.getBoundingClientRect().width || firstCard.offsetWidth || 0;
-  if (!Number.isFinite(cardWidth) || cardWidth <= 0) return [0];
-
+  const cardWidth = firstCard.getBoundingClientRect().width;
   const cardsPerPage = Math.max(1, Math.floor((track.clientWidth + gap) / (cardWidth + gap)));
   const lastStart = Math.max(0, cards.length - cardsPerPage);
   const starts = [];
@@ -252,10 +251,8 @@ const updatePagination = (track, cards, pagination) => {
     dot.className = 'recommended-cards-dot';
     dot.setAttribute('aria-label', `Show cards starting at ${start + 1}`);
     dot.addEventListener('click', () => {
-      const targetCard = cards[Math.min(start, cards.length - 1)] || cards[0];
-      if (!targetCard) return;
       const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-      track.scrollTo({ left: getCardOffset(track, targetCard), behavior });
+      track.scrollTo({ left: getCardOffset(track, cards[start]), behavior });
     });
     pagination.append(dot);
     if (pageIndex === 0) dot.setAttribute('aria-current', 'page');
@@ -265,20 +262,17 @@ const updatePagination = (track, cards, pagination) => {
 };
 
 const decorateCarousel = (track, cards, pagination) => {
-  if (!cards.length) return;
-
   let starts = updatePagination(track, cards, pagination);
   let scrollFrame = 0;
 
   const syncActiveDot = () => {
     scrollFrame = 0;
-    if (pagination.children.length <= 1 || !starts.length) return;
+    if (pagination.children.length <= 1) return;
 
     const currentOffset = track.scrollLeft;
     let activeIndex = 0;
     starts.forEach((start, index) => {
-      const card = cards[start];
-      if (card && getCardOffset(track, card) <= currentOffset + 2) activeIndex = index;
+      if (getCardOffset(track, cards[start]) <= currentOffset + 2) activeIndex = index;
     });
 
     [...pagination.children].forEach((dot, index) => {
