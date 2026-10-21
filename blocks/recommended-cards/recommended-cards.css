@@ -59,6 +59,8 @@
   scroll-padding-inline: 1px;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 .recommended-cards-track::-webkit-scrollbar {
@@ -264,7 +266,21 @@
   }
 
   .recommended-cards-header {
-    column-gap: 12px;
+    grid-template-columns: 1fr;
+    row-gap: 8px;
+    column-gap: 0;
+  }
+
+  .recommended-cards-heading,
+  .recommended-cards-subtitle,
+  .recommended-cards-view-all {
+    grid-column: 1;
+  }
+
+  .recommended-cards-view-all {
+    grid-row: auto;
+    justify-self: start;
+    align-self: start;
   }
 
   .recommended-cards-track {
