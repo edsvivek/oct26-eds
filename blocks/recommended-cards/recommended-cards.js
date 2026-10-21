@@ -127,7 +127,7 @@ const createMedia = (cardData, source) => {
   } else {
     const placeholder = document.createElement('span');
     placeholder.className = 'recommended-cards-image-placeholder';
-    placeholder.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></svg><span>Drop image</span>';
+    placeholder.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></svg>';
     media.append(placeholder);
   }
 
