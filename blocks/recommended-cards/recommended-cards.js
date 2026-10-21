@@ -139,10 +139,17 @@ const createMedia = (cardData, source) => {
     media.append(badge);
   }
 
-  const favorite = document.createElement('span');
+  const favorite = document.createElement('button');
+  favorite.type = 'button';
   favorite.className = 'recommended-cards-favorite';
-  favorite.setAttribute('aria-hidden', 'true');
+  favorite.setAttribute('aria-label', 'Add to favorites');
+  favorite.setAttribute('aria-pressed', 'false');
   favorite.innerHTML = '<svg viewBox="0 0 24 24" focusable="false"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" /></svg>';
+  favorite.addEventListener('click', () => {
+    const isFavorite = favorite.getAttribute('aria-pressed') === 'true';
+    favorite.setAttribute('aria-pressed', String(!isFavorite));
+    favorite.setAttribute('aria-label', isFavorite ? 'Add to favorites' : 'Remove from favorites');
+  });
   media.append(favorite);
 
   return media;
