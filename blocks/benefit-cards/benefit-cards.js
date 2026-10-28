@@ -38,6 +38,18 @@ export default function decorate(block) {
       content.append(...contentCell.childNodes);
       card.append(content);
 
+      const destination = content.querySelector('a[href]');
+      if (destination) {
+        const arrowLink = document.createElement('a');
+        arrowLink.className = 'benefit-cards-link';
+        arrowLink.href = destination.href;
+        arrowLink.setAttribute(
+          'aria-label',
+          `View ${content.querySelector('h1, h2, h3, h4, h5, h6')?.textContent.trim() || 'benefit'}`,
+        );
+        card.append(arrowLink);
+      }
+
       return card;
     })
     .filter(Boolean);
