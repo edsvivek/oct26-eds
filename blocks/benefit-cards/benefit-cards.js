@@ -1,92 +1,49 @@
-const getText = (cell) => cell?.textContent?.trim() || '';
+function getIconPath(cell) {
+  const image = cell.querySelector('img');
+  if (image) return image.src;
 
-const getJsonSource = (block) => {
-  const link = [...block.querySelectorAll('a[href]')].find((anchor) => {
-    const href = anchor.getAttribute('href') || '';
-    try {
-      return new URL(href, document.baseURI).pathname.toLowerCase().endsWith('.json');
-    } catch {
-      return false;
-    }
-  });
+  const link = cell.querySelector('a[href]');
+  if (link) return link.href;
 
-  if (link) {
-    return new URL(link.getAttribute('href'), document.baseURI).href;
-  }
+  const path = cell.textContent.trim();
+  if (!path) return '';
 
-  return '/benefits.json';
-};
+  return /^(?:[a-z]+:)?\/\//i.test(path) || path.startsWith('/')
+    ? path
+    : `/${path.replace(/^\.\//, '')}`;
+}
 
-const createCard = (benefit) => {
-  const article = document.createElement('article');
-  article.className = 'benefit-card';
+export default function decorate(block) {
+  const cards = [...block.children]
+    .map((row) => {
+      const cells = [...row.children];
+      if (cells.length < 2) return null;
 
-  const iconWrap = document.createElement('div');
-  iconWrap.className = 'benefit-card-icon';
-  const icon = document.createElement('span');
-  icon.textContent = benefit.icon || '✓';
-  iconWrap.append(icon);
+      const [iconCell, contentCell] = cells;
+      const card = document.createElement('article');
+      card.className = 'benefit-cards-card';
 
-  const body = document.createElement('div');
-  body.className = 'benefit-card-body';
+      const iconPath = getIconPath(iconCell);
+      if (iconPath) {
+        const icon = document.createElement('img');
+        icon.className = 'benefit-cards-icon';
+        icon.src = iconPath;
+        icon.alt = '';
+        icon.setAttribute('aria-hidden', 'true');
+        card.append(icon);
+      }
 
-  const title = document.createElement('h3');
-  title.textContent = benefit.title || 'Benefit';
-  body.append(title);
+      const content = document.createElement('div');
+      content.className = 'benefit-cards-content';
+      content.append(...contentCell.childNodes);
+      card.append(content);
 
-  if (benefit.description) {
-    const description = document.createElement('p');
-    description.textContent = benefit.description;
-    body.append(description);
-  }
+      return card;
+    })
+    .filter(Boolean);
 
-  if (benefit.link && benefit.linktext) {
-    const link = document.createElement('a');
-    link.className = 'benefit-card-link';
-    link.href = benefit.link;
-    link.textContent = benefit.linktext;
-    body.append(link);
-  }
-
-  article.append(iconWrap, body);
-  return article;
-};
-
-export default async function decorate(block) {
-  const source = getJsonSource(block);
-  block.textContent = '';
-
-  try {
-    const response = await fetch(source);
-    if (!response.ok) {
-      throw new Error(`Benefit cards request failed: ${response.status}`);
-    }
-
-    const json = await response.json();
-    const benefits = Array.isArray(json)
-      ? json
-      : Array.isArray(json.data)
-        ? json.data
-        : Array.isArray(json.items)
-          ? json.items
-          : [];
-
-    if (!benefits.length) {
-      block.textContent = 'No benefits are available.';
-      return;
-    }
-
-    const cards = document.createElement('div');
-    cards.className = 'benefit-cards';
-
-    benefits
-      .filter((benefit) => benefit && typeof benefit === 'object')
-      .forEach((benefit) => cards.append(createCard(benefit)));
-
-    block.append(cards);
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Unable to load benefit cards:', error);
-    block.textContent = 'Benefit information is temporarily unavailable.';
-  }
+  const list = document.createElement('div');
+  list.className = 'benefit-cards-list';
+  list.append(...cards);
+  block.replaceChildren(list);
 }
